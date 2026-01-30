@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { userData } = useAuth();
+    const { userData, isAdmin } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
-    const menuItems = [
+    const userMenuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
         { icon: Leaf, label: "Diagnosis", path: "/diagnosis" },
         { icon: ShoppingBag, label: "Marketplace", path: "/marketplace" },
@@ -27,6 +27,14 @@ const Sidebar = () => {
         { icon: MessageSquare, label: "Feedback", path: "/feedback" },
         { icon: User, label: "My Profile", path: "/profile" },
     ];
+
+    const adminMenuItems = [
+        { icon: LayoutDashboard, label: "Overview", path: "/admin/dashboard" },
+        { icon: AlertOctagon, label: "Complaints", path: "/admin/complaints" },
+        { icon: Leaf, label: "AI Diagnosis", path: "/admin/diagnosis" },
+    ];
+
+    const menuItems = isAdmin ? adminMenuItems : userMenuItems;
 
     const handleLogout = async () => {
         await signOut(auth);

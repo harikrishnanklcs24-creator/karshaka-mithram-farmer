@@ -7,6 +7,7 @@ interface AuthContextType {
     user: User | null;
     userData: any | null;
     loading: boolean;
+    isAdmin: boolean;
     refreshUserData: (currentUser?: User | null) => Promise<any>;
 }
 
@@ -16,6 +17,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [userData, setUserData] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // Derived state for admin check
+    const isAdmin = user?.email === "subadmin@gmail.com";
 
     const refreshUserData = async (currentUser: User | null = user) => {
         if (!currentUser) {
@@ -56,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, userData, loading, refreshUserData }}>
+        <AuthContext.Provider value={{ user, userData, loading, refreshUserData, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

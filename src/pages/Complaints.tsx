@@ -203,7 +203,14 @@ const Complaints = () => {
                                             </span>
                                         </div>
                                         <p className="font-bold text-slate-900 text-sm line-clamp-1">{item.details}</p>
-                                        <p className="text-xs text-slate-500 mt-1">Duration: {item.duration}</p>
+                                        <p className="text-xs text-slate-500 mt-1 mb-2">Duration: {item.duration}</p>
+
+                                        {item.reply && (
+                                            <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
+                                                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Reply from Admin</p>
+                                                <p className="text-xs text-slate-700 font-medium">{item.reply}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

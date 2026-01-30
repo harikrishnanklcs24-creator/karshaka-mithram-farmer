@@ -94,8 +94,8 @@ const AdminComplaints = () => {
                                     <button
                                         onClick={() => toggleStatus(item.id, item.status)}
                                         className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${item.status === "Resolved"
-                                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                                : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                            : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
                                             }`}
                                     >
                                         <CheckCircle className="h-4 w-4" />
@@ -111,6 +111,41 @@ const AdminComplaints = () => {
                                     <p className="text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl">
                                         {item.details}
                                     </p>
+
+                                    {/* Reply Section */}
+                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                        {item.reply ? (
+                                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Admin Reply</p>
+                                                <p className="text-sm text-slate-700 font-medium">{item.reply}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    placeholder="Write a reply..."
+                                                    className="flex-1 bg-slate-50 border-none rounded-xl px-4 text-sm focus:ring-1 focus:ring-primary"
+                                                    onKeyDown={async (e) => {
+                                                        if (e.key === 'Enter') {
+                                                            const val = e.currentTarget.value;
+                                                            if (!val.trim()) return;
+                                                            try {
+                                                                await updateDoc(doc(db, "complaints", item.id), {
+                                                                    reply: val,
+                                                                    status: "Resolved" // Auto-resolve on reply? Maybe optional but good UX
+                                                                });
+                                                                toast.success("Reply sent successfully");
+                                                            } catch (err) {
+                                                                toast.error("Failed to send reply");
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                                <button className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-800">
+                                                    Reply
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

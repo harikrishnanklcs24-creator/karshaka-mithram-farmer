@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Sub-Admin Account</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔐 Create Sub-Admin Account</h1>
+        <p style="color: #64748b; margin-bottom: 20px;">
+            This will create the sub-admin account with the following credentials:
+        </p>
+        <ul style="color: #475569; margin-bottom: 20px;">
+            <li><strong>Email:</strong> subadmin@gmail.com</li>
+            <li><strong>Password:</strong> subadmin@123</li>
+            <li><strong>Name:</strong> Sub Admin</li>
+            <li><strong>District:</strong> Kerala</li>
+        </ul>
+
+        <button id="createBtn" onclick="createSubAdmin()">Create Sub-Admin Account</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration from your project
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsNCb_vyXR4jHH5dmZ9i2RPjSk-qecPgk",
+            authDomain: "karshaka-mithram.firebaseapp.com",
+            projectId: "karshaka-mithram",
+            storageBucket: "karshaka-mithram.firebasestorage.app",
+            messagingSenderId: "247226610101",
+            appId: "1:247226610101:web:f1062ddf6889a4d32d29fc",
+            measurementId: "G-2PFQH1HJC1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.createSubAdmin = async function () {
+            const btn = document.getElementById('createBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.innerHTML = '<div class="info">Creating account...</div>';
+
+            try {
+                // Create auth user
+                const userCredential = await createUserWithEmailAndPassword(
+                    auth,
+                    'subadmin@gmail.com',
+                    'subadmin@123'
+                );
+
+                const user = userCredential.user;
+
+                // Create Firestore document
+                await setDoc(doc(db, 'users', user.uid), {
+                    email: 'subadmin@gmail.com',
+                    name: 'Sub Admin',
+                    district: 'Kerala',
+                    phone: '0000000000',
+                    isOnboarded: true,
+                    createdAt: new Date()
+                });
+
+                status.innerHTML = `
+                    <div class="success">
+                        ✅ Success! Sub-admin account created.<br><br>
+                        You can now login with:<br>
+                        <strong>Email:</strong> subadmin@gmail.com<br>
+                        <strong>Password:</strong> subadmin@123
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                let message = error.message;
+
+                if (error.code === 'auth/email-already-in-use') {
+                    message = 'Account already exists! You can login directly.';
+                }
+
+                status.innerHTML = `<div class="error">❌ Error: ${message}</div>`;
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+
+</html>

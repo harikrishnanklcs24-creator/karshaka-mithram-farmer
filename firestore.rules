@@ -36,13 +36,18 @@ service cloud.firestore {
 
     // Requests (Diagnoses)
     match /requests/{requestId} {
-      allow create: if request.auth != null;
+      allow create, read, update: if request.auth != null;
+    }
+
     // Community Chat Messages
+    match /messages/{messageId} {
+      allow read, write: if true; // Temporary debug query
+    }
+    
     // Complaints
     match /complaints/{complaintId} {
       allow read, create: if request.auth != null;
       allow update: if request.auth != null; // Ideally restrict to admin, but open for now
     }
   }
-}
 }

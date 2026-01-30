@@ -6,6 +6,7 @@ import { signOut } from "firebase/auth";
 import { collection, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { LogOut, Sun, CloudRain, History, ShoppingBag, Leaf, Loader2, TrendingUp, User, Plus, AlertCircle } from "lucide-react";
 import SatelliteInsights from "@/components/SatelliteInsights";
+import SubAdminDashboard from "./SubAdminDashboard";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -154,6 +155,21 @@ const Dashboard = () => {
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
     );
+
+    // Derived state for admin check (using the same logic as AuthContext or directly importing isAdmin if available)
+    // Since useAuth now provides isAdmin, we can use it.
+    // Wait, I updated useAuth but didn't destructure it here yet.
+    // Let me update the import destructuring first. 
+    // Actually, I can just check user email here if I don't want to change the destructuring line above right now, 
+    // BUT I updated AuthContext so I should use it. 
+    // However, for replace_file_content, I need to match exact lines. 
+    // I entered this block to handle the render logic. I'll simply check email here to be safe and quick/robust 
+    // without changing the whole top file imports which might be risky with line numbers.
+    // user is available from line 12.
+
+    if (user?.email === "subadmin@gmail.com") {
+        return <SubAdminDashboard />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50/50">

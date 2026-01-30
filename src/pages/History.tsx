@@ -17,15 +17,19 @@ const History = () => {
 
         const q = query(
             collection(db, "requests"),
-            where("userId", "==", user.uid),
-            orderBy("createdAt", "desc")
+            where("userId", "==", user.uid)
+            // orderBy("createdAt", "desc") // Client-side sort to avoid index issues with compound query
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            }));
+            })).sort((a: any, b: any) => {
+                const dateA = a.createdAt?.seconds ? a.createdAt.seconds : new Date(a.createdAt).getTime() / 1000;
+                const dateB = b.createdAt?.seconds ? b.createdAt.seconds : new Date(b.createdAt).getTime() / 1000;
+                return dateB - dateA;
+            });
             setRequests(data);
             setLoading(false);
         }, (error) => {
@@ -110,6 +114,28 @@ const History = () => {
                                         </button>
                                     </div>
                                 </div>
+
+                                {req.status === 'Escalated' && (
+                                    <div className="mt-3 inline-block">
+                                        <span className="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-1 rounded-lg uppercase tracking-wider">
+                                            Escalated to High Authority
+                                        </span>
+                                    </div>
+                                )}
+
+                                {req.reply && (
+                                    <div className="mt-4 bg-blue-50 p-4 rounded-2xl border border-blue-100 animate-in fade-in">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="h-6 w-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold">
+                                                Ex
+                                            </div>
+                                            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Expert Reply</p>
+                                        </div>
+                                        <p className="text-sm text-slate-700 font-medium">
+                                            "{req.reply}"
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="mt-6 pt-6 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="bg-slate-50 p-4 rounded-2xl">

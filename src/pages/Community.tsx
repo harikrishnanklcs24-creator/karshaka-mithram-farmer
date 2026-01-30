@@ -47,7 +47,7 @@ const Community = () => {
             setLoading(false);
         }, (error) => {
             console.error("Chat Error:", error);
-            // toast.error("Failed to load chat messages");
+            toast.error("Error loading chat: " + error.message);
             setLoading(false);
         });
 

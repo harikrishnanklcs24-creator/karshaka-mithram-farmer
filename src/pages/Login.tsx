@@ -17,7 +17,11 @@ const Login = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             toast.success("Welcome back!");
-            navigate("/dashboard");
+            if (email === "subadmin@gmail.com") {
+                navigate("/admin/dashboard");
+            } else {
+                navigate("/dashboard");
+            }
         } catch (error: any) {
             console.error("Login error:", error);
             toast.error(error.message || "Failed to sign in");

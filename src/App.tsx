@@ -22,7 +22,9 @@ import Feedback from "./pages/Feedback";
 import Community from "./pages/Community";
 import Complaints from "./pages/Complaints";
 import AdminComplaints from "./pages/AdminComplaints";
+import AdminDiagnosis from "./pages/AdminDiagnosis";
 import NaturalPesticides from "./pages/NaturalPesticides";
+import SubAdminDashboard from "./pages/SubAdminDashboard";
 import MainLayout from "./components/MainLayout";
 
 const queryClient = new QueryClient();
@@ -89,7 +91,9 @@ const App = () => {
               <Route path="/pesticides" element={<ProtectedRoute><MainLayout><NaturalPesticides /></MainLayout></ProtectedRoute>} />
               <Route path="/community" element={<ProtectedRoute><MainLayout><Community /></MainLayout></ProtectedRoute>} />
               <Route path="/complaints" element={<ProtectedRoute><MainLayout><Complaints /></MainLayout></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute><MainLayout><SubAdminDashboard /></MainLayout></ProtectedRoute>} />
               <Route path="/admin/complaints" element={<ProtectedRoute><MainLayout><AdminComplaints /></MainLayout></ProtectedRoute>} />
+              <Route path="/admin/diagnosis" element={<ProtectedRoute><MainLayout><AdminDiagnosis /></MainLayout></ProtectedRoute>} />
               <Route path="/diagnosis" element={<ProtectedRoute><MainLayout><Diagnosis /></MainLayout></ProtectedRoute>} />
 
               {/* Public Home */}

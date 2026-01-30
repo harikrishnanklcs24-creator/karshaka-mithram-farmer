@@ -5,6 +5,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { Camera, Upload, Leaf, Languages, Send, AlertCircle, CheckCircle, Loader2, ArrowLeft, User, ShoppingBag, Sprout } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Kerala Districts
 const KERALA_DISTRICTS = [
@@ -173,17 +174,29 @@ const Diagnosis = () => {
       setDiagnosis(data.diagnosis);
 
       // Save request to Firestore history
+      // Save request to Firestore history
       if (user) {
-        await addDoc(collection(db, "requests"), {
-          userId: user.uid,
-          cropCategory,
-          description,
-          district: district || userData?.district,
-          diagnosis: data.diagnosis,
-          riskLevel: data.diagnosis.riskLevel, // Save as top-level for easier querying
-          createdAt: new Date().toISOString(),
-          image: image // Note: For real apps, upload to Storage and save URL instead
-        });
+        try {
+          // Firestore has a 1MB limit. If image is too large, don't save it to DB.
+          const imageToSave = (image && image.length > 1000000) ? null : image;
+
+          await addDoc(collection(db, "requests"), {
+            userId: user.uid,
+            userName: userData?.name || "Farmer",
+            userDistrict: district || userData?.district || "Unknown",
+            cropCategory,
+            description,
+            district: district || userData?.district,
+            diagnosis: data.diagnosis,
+            riskLevel: data.diagnosis.riskLevel,
+            createdAt: new Date().toISOString(),
+            image: imageToSave
+          });
+          toast.success("Diagnosis result saved to History");
+        } catch (saveErr) {
+          console.error("Failed to save to history:", saveErr);
+          toast.error("Result shown, but failed to save to History");
+        }
       }
 
     } catch (err) {
