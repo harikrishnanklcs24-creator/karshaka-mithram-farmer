@@ -25,6 +25,7 @@ import AdminComplaints from "./pages/AdminComplaints";
 import AdminDiagnosis from "./pages/AdminDiagnosis";
 import NaturalPesticides from "./pages/NaturalPesticides";
 import SubAdminDashboard from "./pages/SubAdminDashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import MainLayout from "./components/MainLayout";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   );
 
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+
+  // Allow admins to bypass onboarding checks
+  if (userData?.role === 'superadmin' || userData?.role === 'subadmin') {
+    return <>{children}</>;
+  }
 
   if (user && !userData?.isOnboarded && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
@@ -95,6 +101,7 @@ const App = () => {
               <Route path="/admin/complaints" element={<ProtectedRoute><MainLayout><AdminComplaints /></MainLayout></ProtectedRoute>} />
               <Route path="/admin/diagnosis" element={<ProtectedRoute><MainLayout><AdminDiagnosis /></MainLayout></ProtectedRoute>} />
               <Route path="/diagnosis" element={<ProtectedRoute><MainLayout><Diagnosis /></MainLayout></ProtectedRoute>} />
+              <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
 
               {/* Public Home */}
               <Route path="/" element={<Home />} />

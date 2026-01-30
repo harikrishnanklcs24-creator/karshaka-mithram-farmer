@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { Leaf, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,13 +16,30 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            toast.success("Welcome back!");
-            if (email === "subadmin@gmail.com") {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Auto-assign roles based on email
+            if (email === "admin@gmail.com" || email === "admin1@gmail.com") {
+                await setDoc(doc(db, "users", user.uid), {
+                    role: "superadmin",
+                    email: email,
+                    name: "Super Admin"
+                }, { merge: true });
+                // Force reload to ensure AuthContext picks up the new role
+                window.location.href = "/super-admin";
+            } else if (email === "subadmin@gmail.com") {
+                await setDoc(doc(db, "users", user.uid), {
+                    role: "subadmin",
+                    email: email,
+                    name: "Default Sub-Admin",
+                    district: "Thrissur"
+                }, { merge: true });
                 navigate("/admin/dashboard");
             } else {
                 navigate("/dashboard");
             }
+            toast.success("Welcome back!");
         } catch (error: any) {
             console.error("Login error:", error);
             toast.error(error.message || "Failed to sign in");
@@ -31,8 +49,12 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f9f1] to-[#e1f0e4] px-4 py-12">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-green-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
+        <div className="min-h-screen flex items-center justify-center animated-background px-4 py-12 relative overflow-hidden">
+            {/* Decorative floating blobs */}
+            <div className="absolute top-20 left-20 w-72 h-72 bg-green-300/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl animate-pulse"></div>
+
+            <div className="max-w-md w-full space-y-8 glass-card p-8 rounded-[2.5rem] animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10">
                 <div className="text-center">
                     <div className="mx-auto h-20 w-20 bg-white rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 transition-transform hover:rotate-0 overflow-hidden border-2 border-primary/10 p-1">
                         <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-xl" />

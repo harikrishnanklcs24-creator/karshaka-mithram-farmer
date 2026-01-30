@@ -39,8 +39,12 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f9f1] to-[#e1f0e4] px-4 py-12">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-green-50 animate-in fade-in zoom-in duration-500">
+        <div className="min-h-screen flex items-center justify-center animated-background px-4 py-12 relative overflow-hidden">
+            {/* Decorative floating blobs */}
+            <div className="absolute top-10 right-10 w-80 h-80 bg-green-200/30 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-10 left-10 w-80 h-80 bg-sky-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+            <div className="max-w-md w-full space-y-8 glass-card p-8 rounded-[2.5rem] animate-in fade-in zoom-in duration-700 relative z-10">
                 <div className="text-center">
                     <div className="mx-auto h-20 w-20 bg-white rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6 transition-transform hover:rotate-0 overflow-hidden border-2 border-primary/10 p-1">
                         <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-xl" />

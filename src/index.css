@@ -205,6 +205,31 @@
   .hover-scale {
     @apply transition-transform duration-300 hover:scale-[1.02];
   }
+
+  .animated-background {
+    background: linear-gradient(-45deg, #f0f9f1, #dcfce7, #ccfbf1, #e0f2fe, #f0f9f1);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  /* Glassmorphism card effect */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-xl;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
 
 @layer utilities {
