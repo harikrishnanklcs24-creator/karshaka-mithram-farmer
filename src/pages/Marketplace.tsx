@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, query, onSnapshot, orderBy, doc, deleteDoc, where } from "firebase/firestore";
 import { ShoppingBag, Plus, Image as ImageIcon, Tag, FileText, Loader2, TrendingUp, ArrowLeft, Trash2, MapPin, User } from "lucide-react";
+import SellerTerms from "@/components/SellerTerms";
 import { toast } from "sonner";
 
 const Marketplace = () => {
@@ -11,6 +12,7 @@ const Marketplace = () => {
     const { user, userData } = useAuth();
     const [products, setProducts] = useState<any[]>([]);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showTerms, setShowTerms] = useState(false);
     const [loading, setLoading] = useState(false);
     const [requests, setRequests] = useState<any[]>([]);
     const [showRequestsModal, setShowRequestsModal] = useState(false);
@@ -119,7 +121,7 @@ const Marketplace = () => {
                         <p className="text-slate-500 mt-1 font-medium">Buy and sell fresh farm products directly</p>
                     </div>
                     <button
-                        onClick={() => setShowAddForm(true)}
+                        onClick={() => setShowTerms(true)}
                         className="farmer-btn h-12 px-6 flex items-center gap-2"
                     >
                         <Plus className="h-5 w-5" />
@@ -380,6 +382,17 @@ const Marketplace = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Seller Terms Modal */}
+            {showTerms && (
+                <SellerTerms
+                    onAgree={() => {
+                        setShowTerms(false);
+                        setShowAddForm(true);
+                    }}
+                    onCancel={() => setShowTerms(false)}
+                />
             )}
         </div>
     );
