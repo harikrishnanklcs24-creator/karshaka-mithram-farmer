@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
-import { Users, AlertTriangle, ShieldCheck, Activity, UserCog, LogOut, LayoutDashboard, FileText, Stethoscope, BarChart3, TrendingUp, PieChart, Search, Filter } from "lucide-react";
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { Users, AlertTriangle, ShieldCheck, Activity, UserCog, LogOut, LayoutDashboard, FileText, Stethoscope, BarChart3, TrendingUp, PieChart, Search, Filter, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import {
@@ -12,7 +12,7 @@ import {
 
 const SuperAdminDashboard = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'analytics' | 'complaints' | 'diagnoses'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'analytics' | 'complaints' | 'diagnoses' | 'notifications'>('dashboard');
 
     // Data States
     const [users, setUsers] = useState<any[]>([]);
@@ -21,7 +21,12 @@ const SuperAdminDashboard = () => {
     const [allRequests, setAllRequests] = useState<any[]>([]);
     const [escalatedComplaints, setEscalatedComplaints] = useState<any[]>([]);
     const [escalatedDiagnoses, setEscalatedDiagnoses] = useState<any[]>([]);
+    const [offers, setOffers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Offer/Notification Form States
+    const [offerDescription, setOfferDescription] = useState("");
+    const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
     // Chart Data
     const [pieData, setPieData] = useState<any[]>([]);
@@ -50,6 +55,10 @@ const SuperAdminDashboard = () => {
                 setAllRequests(rList);
                 setEscalatedDiagnoses(rList.filter((r: any) => r.status === 'Escalated'));
 
+                // 4. Fetch Notifications (stored in 'offers' collection)
+                const offersSnap = await getDocs(collection(db, "offers"));
+                setOffers(offersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
                 // --- PREPARE CHARTS ---
 
                 // Pie Chart: Status Distribution
@@ -66,7 +75,7 @@ const SuperAdminDashboard = () => {
                     { name: 'Escalated', value: escalated, fill: '#f87171' }
                 ]);
 
-                // Line Chart: Trend (Mocked for demo as timestamp distribution might be sparse)
+                // Line Chart: Trend (Mocked)
                 setLineData([
                     { name: 'Week 1', users: Math.floor(allUsers.length * 0.2), issues: 5 },
                     { name: 'Week 2', users: Math.floor(allUsers.length * 0.5), issues: 12 },
@@ -100,6 +109,42 @@ const SuperAdminDashboard = () => {
         navigate('/login');
     };
 
+    const handleCreateOffer = async () => {
+        if (!offerDescription.trim()) return;
+        setIsSubmittingOffer(true);
+        try {
+            await addDoc(collection(db, "offers"), {
+                description: offerDescription,
+                imageUrl: null, // No image for text notifications
+                createdAt: new Date().toISOString(),
+                active: true
+            });
+            // Refresh offers locally
+            const offersSnap = await getDocs(collection(db, "offers"));
+            setOffers(offersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+            // Reset form
+            setOfferDescription("");
+            alert("Notification posted successfully!");
+        } catch (error) {
+            console.error("Error creating notification:", error);
+            alert("Failed to post notification.");
+        } finally {
+            setIsSubmittingOffer(false);
+        }
+    };
+
+    const handleDeleteOffer = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this notification?")) return;
+        try {
+            await deleteDoc(doc(db, "offers", id));
+            setOffers(prev => prev.filter(o => o.id !== id));
+        } catch (error) {
+            console.error("Error deleting notification:", error);
+            alert("Failed to delete.");
+        }
+    };
+
     const SidebarItem = ({ id, label, icon: Icon }: any) => (
         <button
             onClick={() => setActiveTab(id)}
@@ -128,6 +173,7 @@ const SuperAdminDashboard = () => {
                     <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</div>
                     <SidebarItem id="dashboard" label="Dashboard" icon={LayoutDashboard} />
                     <SidebarItem id="users" label="Users & Sub-Admins" icon={Users} />
+                    <SidebarItem id="notifications" label="Notifications" icon={Bell} />
                     <SidebarItem id="analytics" label="Analytics" icon={BarChart3} />
 
                     <div className="mt-6 px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Issues</div>
@@ -147,7 +193,7 @@ const SuperAdminDashboard = () => {
             <main className="flex-1 lg:ml-72 p-8 animate-fade-in overflow-y-auto h-screen">
                 <header className="mb-8">
                     <h1 className="text-3xl font-black text-slate-900 capitalize">
-                        {activeTab.replace('-', ' ')}
+                        {activeTab === 'notifications' ? 'Manage Notifications' : activeTab.replace('-', ' ')}
                     </h1>
                     <p className="text-slate-500 text-sm">Super Admin Overview</p>
                 </header>
@@ -295,7 +341,64 @@ const SuperAdminDashboard = () => {
                             </div>
                         )}
 
-                        {/* 4. Unresolved Complaints */}
+                        {/* 4. Notifications (Manage) */}
+                        {activeTab === 'notifications' && (
+                            <div className="space-y-8">
+                                {/* Create Notification Form */}
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm">
+                                    <h3 className="font-bold text-xl text-blue-900 mb-6 flex items-center gap-2">
+                                        <Bell className="h-6 w-6 text-blue-600" /> Broadcast Notification
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <label className="block text-sm font-bold text-slate-700">Notification Message (Shown to all users)</label>
+                                        <textarea
+                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all font-medium text-slate-600 h-32 resize-none"
+                                            placeholder="Enter important announcement here..."
+                                            value={offerDescription}
+                                            onChange={(e) => setOfferDescription(e.target.value)}
+                                        ></textarea>
+
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                onClick={handleCreateOffer}
+                                                disabled={isSubmittingOffer || !offerDescription.trim()}
+                                                className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50"
+                                            >
+                                                {isSubmittingOffer ? 'Sending...' : 'Send Notification'}
+                                            </button>
+                                            <p className="text-xs text-slate-500">* Messages appear on user dashboards immediately.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Active Notifications List */}
+                                <div className="space-y-4">
+                                    <h3 className="font-bold text-lg text-slate-900">Active Notifications</h3>
+                                    {offers.map((offer, idx) => (
+                                        <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-4">
+                                            <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
+                                                <Bell className="h-6 w-6" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-slate-900 text-lg">{offer.description}</p>
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    Posted: {new Date(offer.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteOffer(offer.id)}
+                                                className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {offers.length === 0 && <p className="text-slate-500 text-sm italic">No active notifications.</p>}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 5. Unresolved Complaints */}
                         {activeTab === 'complaints' && (
                             <div className="space-y-4">
                                 {escalatedComplaints.length === 0 ? (
@@ -335,7 +438,7 @@ const SuperAdminDashboard = () => {
                             </div>
                         )}
 
-                        {/* 5. Escalated Diagnoses */}
+                        {/* 6. Escalated Diagnoses */}
                         {activeTab === 'diagnoses' && (
                             <div className="space-y-6">
                                 {escalatedDiagnoses.length === 0 ? (

@@ -145,6 +145,30 @@ const Dashboard = () => {
         return () => unsubscribe();
     }, [user]);
 
+    // Fetch Latest Active Offer
+    const [latestOffer, setLatestOffer] = useState<any>(null);
+    useEffect(() => {
+        const q = query(
+            collection(db, "offers"),
+            orderBy("createdAt", "desc"),
+            limit(1)
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            console.log("Offers snapshot size:", snapshot.size);
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
+                console.log("Latest offer data:", data);
+                setLatestOffer(data);
+            } else {
+                console.log("No offers found.");
+                setLatestOffer(null);
+            }
+        }, (error) => {
+            console.error("Error fetching offers:", error);
+        });
+        return () => unsubscribe();
+    }, []);
+
     const handleLogout = async () => {
         await signOut(auth);
         navigate("/login");
@@ -174,6 +198,29 @@ const Dashboard = () => {
     return (
         <div className="min-h-screen bg-slate-50/50">
             <main className="max-w-5xl mx-auto p-6 space-y-8 animate-fade-in">
+                {/* Notification Banner */}
+                {latestOffer && (
+                    <div className="bg-blue-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-200 relative overflow-hidden animate-slide-up flex items-center gap-4">
+                        <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0 backdrop-blur-sm z-10 relative">
+                            <AlertCircle className="h-5 w-5 text-white" />
+                        </div>
+
+                        {/* Marquee Container */}
+                        <div className="flex-1 overflow-hidden relative h-8 flex items-center group">
+                            <div className="animate-marquee whitespace-nowrap font-medium text-blue-50 text-lg">
+                                <span className="mr-8 font-bold text-white">📢 Admin Announcement:</span>
+                                {latestOffer.description}
+                                <span className="mx-8">•</span>
+                                {latestOffer.description}
+                                <span className="mx-8">•</span>
+                                {latestOffer.description}
+                            </div>
+                            {/* Fade edges */}
+                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-blue-600 to-transparent z-10"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-blue-600 to-transparent z-10"></div>
+                        </div>
+                    </div>
+                )}
                 {/* High/Medium Risk Alert Banner */}
                 {highRiskAlerts.length > 0 && (
                     <div className={`border rounded-[2rem] p-6 animate-pulse flex items-start gap-4 shadow-sm ${highRiskAlerts[0].diagnosis?.riskLevel === "High"

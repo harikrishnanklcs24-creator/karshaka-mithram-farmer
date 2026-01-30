@@ -59,7 +59,13 @@ service cloud.firestore {
     // Complaints
     match /complaints/{complaintId} {
       allow read, create: if request.auth != null;
-      allow update: if request.auth != null; // Allowing all authenticated to update for now (needed for subadmin replies)
+      allow update: if request.auth != null && (isSuperAdmin() || isSubAdmin() || resource.data.userId == request.auth.uid);
+    }
+
+    // Offers & Notifications
+    match /offers/{offerId} {
+      allow read: if request.auth != null;
+      allow write: if isSuperAdmin();
     }
   }
 }
