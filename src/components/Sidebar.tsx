@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import {
     LayoutDashboard, Leaf, ShoppingBag, History,
     User, LogOut, Menu, X, Bell, Search,
-    ChevronRight, Settings, MessageSquare, Sprout, Users, AlertOctagon
+    ChevronRight, Settings, MessageSquare, Sprout, Users, AlertOctagon, CloudRain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,7 @@ const Sidebar = () => {
         { icon: LayoutDashboard, label: "Overview", path: "/admin/dashboard" },
         { icon: AlertOctagon, label: "Complaints", path: "/admin/complaints" },
         { icon: Leaf, label: "AI Diagnosis", path: "/admin/diagnosis" },
+        { icon: CloudRain, label: "Weather Prediction", path: "/admin/weather" },
     ];
 
     const menuItems = isAdmin ? adminMenuItems : userMenuItems;

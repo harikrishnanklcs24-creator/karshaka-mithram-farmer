@@ -23,6 +23,7 @@ import Community from "./pages/Community";
 import Complaints from "./pages/Complaints";
 import AdminComplaints from "./pages/AdminComplaints";
 import AdminDiagnosis from "./pages/AdminDiagnosis";
+import AdminWeather from "./pages/AdminWeather";
 import NaturalPesticides from "./pages/NaturalPesticides";
 import SubAdminDashboard from "./pages/SubAdminDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
@@ -100,6 +101,7 @@ const App = () => {
               <Route path="/admin/dashboard" element={<ProtectedRoute><MainLayout><SubAdminDashboard /></MainLayout></ProtectedRoute>} />
               <Route path="/admin/complaints" element={<ProtectedRoute><MainLayout><AdminComplaints /></MainLayout></ProtectedRoute>} />
               <Route path="/admin/diagnosis" element={<ProtectedRoute><MainLayout><AdminDiagnosis /></MainLayout></ProtectedRoute>} />
+              <Route path="/admin/weather" element={<ProtectedRoute><MainLayout><AdminWeather /></MainLayout></ProtectedRoute>} />
               <Route path="/diagnosis" element={<ProtectedRoute><MainLayout><Diagnosis /></MainLayout></ProtectedRoute>} />
               <Route path="/super-admin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
 
