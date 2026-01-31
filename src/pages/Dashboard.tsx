@@ -7,6 +7,7 @@ import { collection, query, where, orderBy, limit, onSnapshot } from "firebase/f
 import { LogOut, Sun, CloudRain, History, ShoppingBag, Leaf, Loader2, TrendingUp, User, Plus, AlertCircle } from "lucide-react";
 import SatelliteInsights from "@/components/SatelliteInsights";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import EmergencyButton from "@/components/EmergencyButton";
 import SubAdminDashboard from "./SubAdminDashboard";
 import { toast } from "sonner";
 
@@ -438,6 +439,7 @@ const Dashboard = () => {
                     </ErrorBoundary>
                 </div>
             </main>
+            <EmergencyButton />
         </div>
     );
 };

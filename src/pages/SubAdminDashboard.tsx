@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
-import { AlertOctagon, CheckCircle, Clock, Users, Leaf, ArrowRight, PieChart as PieChartIcon, BarChart3 } from "lucide-react";
+import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { AlertOctagon, CheckCircle, Clock, Users, Leaf, ArrowRight, PieChart as PieChartIcon, BarChart3, AlertTriangle } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useNavigate } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
@@ -65,6 +65,37 @@ const SubAdminDashboard = () => {
         diagnosisRisk: [] as any[],
         cropDistribution: [] as any[]
     });
+
+    const [emergencyAlerts, setEmergencyAlerts] = useState<any[]>([]);
+
+    // Real-time Emergency Alerts Listener
+    useEffect(() => {
+        const q = query(
+            collection(db, "requests"),
+            where("priority", "==", "critical"),
+            where("status", "==", "Pending"),
+            orderBy("createdAt", "desc")
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setEmergencyAlerts(alerts);
+
+            // Play sound or show toast for new alerts
+            if (alerts.length > 0) {
+                // Check if it's a new alert (simple check: first item is very recent)
+                const latest: any = alerts[0];
+                const alertTime = new Date(latest.createdAt).getTime();
+                if (Date.now() - alertTime < 60000) { // < 1 minute
+                    toast.error("CRITICAL EMERGENCY REPORTED!", {
+                        description: `${latest.cropCategory} in ${latest.userDistrict}`,
+                        duration: 10000
+                    });
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -167,6 +198,33 @@ const SubAdminDashboard = () => {
                 <h1 className="text-3xl font-black text-slate-900">Sub-Admin Overview</h1>
                 <p className="text-slate-500">Monitor platform activity and user issues</p>
             </header>
+
+            {/* Emergency Alerts Banner */}
+            {emergencyAlerts.length > 0 && (
+                <div className="bg-red-600 rounded-[2rem] p-6 text-white shadow-lg shadow-red-200 animate-pulse relative overflow-hidden mb-6">
+                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-full animate-shimmer" />
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                            <AlertTriangle className="h-8 w-8 text-white animate-bounce" />
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-black">CRITICAL EMERGENCY DETECTED</h2>
+                            <p className="font-medium text-red-50 text-lg">
+                                {emergencyAlerts.length} Active {emergencyAlerts.length === 1 ? 'Emergency' : 'Emergencies'} Reported! Check details immediately.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                // Scroll to recent activity or specialized view
+                                document.getElementById('recent-activity')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className="bg-white text-red-600 px-6 py-3 rounded-xl font-black hover:bg-red-50 transition-colors shadow-sm"
+                        >
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Analytics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
